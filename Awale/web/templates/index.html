@@ -170,8 +170,9 @@ body {
             change_score_player_1(json.score1);
             change_score_player_2(json.score2);
             for (let i = 0; i < board.length ; i++) {
-                cases[i].innerHTML = board[i];
-                if (playable[i] === 1) {
+                let id = parseInt(cases[i].id);
+                cases[i].innerHTML = board[id];
+                if (playable[id] === 1) {
                     cases[i].classList.add('playable');
                     cases[i].classList.remove('not_playable');
                 } else {
@@ -198,8 +199,9 @@ body {
 
             for (let i = 0; i < cases.length ; i++) {
                 cases[i].addEventListener('click', function () {
+                    let id = parseInt(cases[i].id);
                     if (cases[i].classList.contains('playable'))
-                        play_case(i + 1);
+                        play_case(id);
                 })
             }
 
@@ -221,7 +223,7 @@ body {
 <body>
 <div class="main">
     <div class="top">
-    <p>Player 1 score : </p> <p id="score1">55</p>
+    <p>Player 1 score : </p> <p id="score1">0</p>
     </div>
     <div class="middle">
         <div class="control_panel">
@@ -231,27 +233,27 @@ body {
         <div class="board">
 
             <div class="first_line">
-                <div class="grid-item" id="case1">5</div>
-                <div class="grid-item" id="case2">5</div>
-                <div class="grid-item" id="case3">5</div>
-                <div class="grid-item" id="case4">5</div>
-                <div class="grid-item" id="case5">5</div>
-                <div class="grid-item" id="case6">5</div>
+                <div class="grid-item" id="11">4</div>
+                <div class="grid-item" id="10">4</div>
+                <div class="grid-item" id="9">4</div>
+                <div class="grid-item" id="8">4</div>
+                <div class="grid-item" id="7">4</div>
+                <div class="grid-item" id="6">4</div>
             </div>
 
             <div class="second_line">
-                <div class="grid-item" id="case7">5</div>
-                <div class="grid-item" id="case8">5</div>
-                <div class="grid-item" id="case9">5</div>
-                <div class="grid-item" id="case10">5</div>
-                <div class="grid-item" id="case11">5</div>
-                <div class="grid-item" id="case12">5</div>
+                <div class="grid-item" id="0">4</div>
+                <div class="grid-item" id="1">4</div>
+                <div class="grid-item" id="2">4</div>
+                <div class="grid-item" id="3">4</div>
+                <div class="grid-item" id="4">4</div>
+                <div class="grid-item" id="5">4</div>
             </div>
 
         </div>
     </div>
     <div class="bottom">
-            <p>Player 2 score : </p> <p id="score2">55</p>
+            <p>Player 2 score : </p> <p id="score2">0</p>
     </div>
 
 </div>
