@@ -112,8 +112,10 @@ class SimpleBoard:
 
         return False
 
+    def reset(self):
+        self.firstSecond = np.array([4 * np.ones(LEN, dtype=int), 4 * np.ones(LEN, dtype=int)])
+        self.turn = 0
+        self.playersScores = np.array([0, 0])
 
-if __name__ == "__main__":
-    board = SimpleBoard()
 
 

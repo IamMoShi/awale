@@ -1,14 +1,16 @@
 from flask import Flask, render_template, jsonify
-from Game import Game
+from SimpleBoard import SimpleBoard
 
 app = Flask(__name__)
 
-game = Game("Player1", "Player2")
+game = SimpleBoard()
+
 
 @app.route("/reset")
 def reset():
     game.reset()
     return "Game reset"
+
 
 @app.route("/")
 def hello_world():
@@ -17,28 +19,31 @@ def hello_world():
 
 @app.route("/current_board")
 def curren_board():
-    board, playable, score1, score2 = game.get_current_board()
-    playable = [1 if i in playable else 0 for i in range(12)]
+    board = [int(i) for i in game.firstSecond[0]] + [int(i) for i in game.firstSecond[1]]
+    score1, score2 = list(game.playersScores)
+    if game.turn:
+        playable = [0] * 6 + [1 if i else 0 for i in game.getMoves()]
+    else:
+        playable = [1 if i else 0 for i in game.getMoves()] + [0] * 6
     dict = {
         "board": board,
         "playable": playable,
-        "score1": score1,
-        "score2": score2,
+        "score1": int(score1),
+        "score2": int(score2),
     }
     return jsonify(dict)
 
 
 @app.route("/play/<int:playable>")
 def play(playable):
-    print("player wants to play : " + str(playable))
-    game.play(playable)
-    board, playable, score1, score2 = game.get_current_board()
-    print("next playable cases : " + str(playable))
-    playable = [1 if i in playable else 0 for i in range(12)]
-    dict = {
-        "board": board,
-        "playable": playable,
-        "score1": score1,
-        "score2": score2,
-    }
-    return jsonify(dict)
+    playable = playable % 6
+    if not game.getMoves()[playable]:
+        return curren_board()
+
+    game.makeMove(playable)
+    return curren_board()
+
+
+if __name__ == '__main__':
+    app.debug = True
+    app.run()
