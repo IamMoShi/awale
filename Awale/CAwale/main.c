@@ -260,10 +260,9 @@ void evaluate(Board_t *board, int number_of_batches) {
 
         if (current_story.depth > MinMax[current_story.first_move][1]) {
             MinMax[current_story.first_move][1] = current_story.depth;
-            MinMax[current_story.first_move][0] = current_story.depth;
         }
 
-        if (current_story.depth < MinMax[current_story.first_move][0]) {
+        if (current_story.depth < MinMax[current_story.first_move][0] || MinMax[current_story.first_move][0] == 0) {
             MinMax[current_story.first_move][0] = current_story.depth;
         }
     }

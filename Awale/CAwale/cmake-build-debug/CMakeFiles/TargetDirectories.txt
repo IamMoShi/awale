@@ -1,3 +1,0 @@
-C:/Users/moshi/Documents/projets/IA/awale/Awale/CAwale/cmake-build-debug/CMakeFiles/CAwale.dir
-C:/Users/moshi/Documents/projets/IA/awale/Awale/CAwale/cmake-build-debug/CMakeFiles/edit_cache.dir
-C:/Users/moshi/Documents/projets/IA/awale/Awale/CAwale/cmake-build-debug/CMakeFiles/rebuild_cache.dir

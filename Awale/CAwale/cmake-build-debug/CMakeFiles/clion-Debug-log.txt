@@ -1,10 +1,6 @@
-"C:\Program Files\JetBrains\CLion 2023.2.2\bin\cmake\win\x64\bin\cmake.exe" -DCMAKE_BUILD_TYPE=Debug "-DCMAKE_MAKE_PROGRAM=C:/Program Files/JetBrains/CLion 2023.2.2/bin/ninja/win/x64/ninja.exe" -G Ninja -S C:\Users\moshi\Documents\projets\IA\awale\Awale\CAwale -B C:\Users\moshi\Documents\projets\IA\awale\Awale\CAwale\cmake-build-debug
--- The C compiler identification is GNU 13.1.0
--- Detecting C compiler ABI info
--- Detecting C compiler ABI info - done
--- Check for working C compiler: C:/Program Files/JetBrains/CLion 2023.2.2/bin/mingw/bin/gcc.exe - skipped
--- Detecting C compile features
--- Detecting C compile features - done
--- Configuring done (1.9s)
--- Generating done (0.0s)
--- Build files have been written to: C:/Users/moshi/Documents/projets/IA/awale/Awale/CAwale/cmake-build-debug
+C:\Users\neyen\AppData\Local\JetBrains\Toolbox\apps\CLion\ch-0\231.9011.31\bin\cmake\win\x64\bin\cmake.exe -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - MinGW Makefiles" -S C:\Users\neyen\Documents\Pro\TN2A\IA\projet_awale\awale\Awale\CAwale -B C:\Users\neyen\Documents\Pro\TN2A\IA\projet_awale\awale\Awale\CAwale\cmake-build-debug
+CMake Error at CMakeLists.txt:1 (cmake_minimum_required):
+  CMake 3.26 or higher is required.  You are running version 3.25.2
+
+
+-- Configuring incomplete, errors occurred!
