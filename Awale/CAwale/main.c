@@ -168,7 +168,7 @@ Story solve_recursive(Board_t *board, Story result) {
     uint8_t count; // The number of possible moves this turn
 
 
-    if (result.depth >= 500) {
+    if (result.depth >= 2000) {
         exit(10);
     }
 
@@ -267,15 +267,24 @@ void evaluate(Board_t *board, int number_of_batches) {
         }
     }
 
-
-    for (int i = 0; i < 6; ++i) {
-        depth[i] = depth[i] / (double) (victories[i] + null[i] + loses[i]);
-        probability_table[i] = (double) victories[i] / (double) (victories[i] + null[i] + loses[i]);
-        printf("%d -- v: %d ; n: %d ; d: %d ; txV : %.10lf ; depthMoy : %.10lf ; depthMin : %d ; depthMax %d\n", i, victories[i], null[i], loses[i], probability_table[i], depth[i] , MinMax[i][0], MinMax[i][1]);
+    printf("{");
+    for (int i = 0; i < 5; ++i) {
+        if  (((double) victories[i] + null[i] + loses[i]) == 0) {
+            depth[i] = 0;
+            probability_table[i] = 0;
+        } else {
+            depth[i] = depth[i] / (double) (victories[i] + null[i] + loses[i]);
+            probability_table[i] = (double) victories[i] / (double) (victories[i] + null[i] + loses[i]);
+        }
+        printf("\n\"%d\"    : {\n \"victories\": %d,\n \"draw\": %d,\n \"defeats\": %d,\n \"v_rate\": %.10lf,\n \"avg_depth\": %.10lf,\n \"min_depth\": %d,\n \"max_depth\": %d\n},\n",
+               i, victories[i], null[i], loses[i], probability_table[i], depth[i], MinMax[i][0], MinMax[i][1]);
     }
-
-    // Choose the best move
-
+    int i = 5;
+    depth[i] = depth[i] / (double) (victories[i] + null[i] + loses[i]);
+    probability_table[i] = (double) victories[i] / (double) (victories[i] + null[i] + loses[i]);
+    printf("\n\"%d\": {\n \"victories\": %d,\n \"draw\": %d,\n \"defeats\": %d,\n \"v_rate\": %.10lf,\n \"avg_depth\": %.10lf,\n \"min_depth\": %d,\n \"max_depth\": %d\n}\n",
+           i, victories[i], null[i], loses[i], probability_table[i], depth[i], MinMax[i][0], MinMax[i][1]);
+    printf("}\n");
 
 }
 
@@ -476,46 +485,16 @@ void test_play() {
 /* ===================================================== MAIN ====================================================== */
 /* ================================================================================================================= */
 
-unsigned long mix(unsigned long a, unsigned long b, unsigned long c) {
-    a = a - b;
-    a = a - c;
-    a = a ^ (c >> 13);
-    b = b - c;
-    b = b - a;
-    b = b ^ (a << 8);
-    c = c - a;
-    c = c - b;
-    c = c ^ (b >> 13);
-    a = a - b;
-    a = a - c;
-    a = a ^ (c >> 12);
-    b = b - c;
-    b = b - a;
-    b = b ^ (a << 16);
-    c = c - a;
-    c = c - b;
-    c = c ^ (b >> 5);
-    a = a - b;
-    a = a - c;
-    a = a ^ (c >> 3);
-    b = b - c;
-    b = b - a;
-    b = b ^ (a << 10);
-    c = c - a;
-    c = c - b;
-    c = c ^ (b >> 15);
-    return c;
-}
-
 int main(int argc, char *argv[]) {
-    test_load_board();
-    test_playable();
-    test_count();
-    test_is_finished();
-    test_play();
+//    test_load_board();
+//    test_playable();
+//    test_count();
+//    test_is_finished();
+//    test_play();
 
-    if (argc != 15) {
-        return -1;
+    //printf("%d\n", argc);
+    if (argc != 16) {
+        return 1;
     }
     // Build the board
     srand(time(NULL));
@@ -526,7 +505,7 @@ int main(int argc, char *argv[]) {
     }
     Board_t board1 = load_board(board_table);
 
-    evaluate(&board1, 100000);
+    evaluate(&board1, atoi(argv[15]));
 
     return 0;
 }

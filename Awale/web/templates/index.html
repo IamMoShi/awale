@@ -1,234 +1,188 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Grille avec Flexbox</title>
-<style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grille avec Flexbox</title>
+    <style>
 
-body {
-    margin: 0;
-    padding: 0;
-    }
-
-.main {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: space-evenly;
-    height: 100vh;
-    width: 100%;
-    box-shadow: rgba(50, 50, 93, 0.25) 0px 30px 60px -12px inset, rgba(0, 0, 0, 0.3) 0px 18px 36px -18px inset;
-}
-
-.middle {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-    height: 30%;
-    width: 90%;
-    box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px, rgba(0, 0, 0, 0.3) 0px 7px 13px -3px, rgba(0, 0, 0, 0.2) 0px -3px 0px inset;
-    padding: 2vw;
-    background: #703e00 url("https://www.transparenttextures.com/patterns/wood-pattern.png");
-    /* This is mostly intended for prototyping; please download the pattern and re-host for production environments. Thank you! */
-    border-radius: 10vh;
-}
-
-.board {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    width: 70%;
-    height: 100%;
-}
-
-.first_line, .second_line {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    height: 50%;
-}
-
-.grid-item {
-    margin-left: 2%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 50%;
-    height: 90%;
-    border: 3px solid black;
-    border-radius: 5vh;
-    box-shadow: inset 0px -64px 100px 0px rgba(0,0,0,0.65);
-    color: white;
-    font-size: 2em;
-}
-
-.control_panel {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: space-evenly;
-    height: 100%;
-    width: 20%;
-    border-right: 10px double black;
-}
-/* CSS */
-.button-4 {
-  appearance: none;
-  background-color: #FAFBFC;
-  border: 1px solid rgba(27, 31, 35, 0.15);
-  border-radius: 6px;
-  box-shadow: rgba(27, 31, 35, 0.04) 0 1px 0, rgba(255, 255, 255, 0.25) 0 1px 0 inset;
-  box-sizing: border-box;
-  color: #24292E;
-  cursor: pointer;
-  display: inline-block;
-  font-family: -apple-system, system-ui, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 20px;
-  list-style: none;
-  padding: 6px 16px;
-  position: relative;
-  transition: background-color 0.2s cubic-bezier(0.3, 0, 0.5, 1);
-  user-select: none;
-  -webkit-user-select: none;
-  touch-action: manipulation;
-  vertical-align: middle;
-  white-space: nowrap;
-  word-wrap: break-word;
-}
-
-.button-4:hover {
-  background-color: #F3F4F6;
-  text-decoration: none;
-  transition-duration: 0.1s;
-}
-
-.button-4:disabled {
-  background-color: #FAFBFC;
-  border-color: rgba(27, 31, 35, 0.15);
-  color: #959DA5;
-  cursor: default;
-}
-
-.button-4:active {
-  background-color: #EDEFF2;
-  box-shadow: rgba(225, 228, 232, 0.2) 0 1px 0 inset;
-  transition: none 0s;
-}
-
-.button-4:focus {
-  outline: 1px transparent;
-}
-
-.button-4:before {
-  display: none;
-}
-
-.button-4::-webkit-details-marker {
-  display: none;
-}
-
-.top, .bottom {
-    display: flex;
-    flex-direction: row;
-    font-size:10vh;
-}
-
-.playable {
-    border-color: #32a852;
-}
-
-.not_playable {
-    border-color: #a83232;
-}
-
-</style>
-
-
-    <script>
-
-        function change_score_player_1(score) {
-            let score_player_1 = document.getElementById('score1');
-            score_player_1.innerHTML = score;
+        body {
+            margin: 0;
+            padding: 0;
         }
 
-        function change_score_player_2(score) {
-            let score_player_2 = document.getElementById('score2');
-            score_player_2.innerHTML = score;
+        .main {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-evenly;
+            height: 100vh;
+            width: 100%;
+            box-shadow: rgba(50, 50, 93, 0.25) 0px 30px 60px -12px inset, rgba(0, 0, 0, 0.3) 0px 18px 36px -18px inset;
         }
 
-        function update_board(json) {
-            let cases = document.querySelectorAll('.grid-item');
-            let board = json.board;
-            let playable = json.playable;
-            change_score_player_1(json.score1);
-            change_score_player_2(json.score2);
-            for (let i = 0; i < board.length ; i++) {
-                let id = parseInt(cases[i].id);
-                cases[i].innerHTML = board[id];
-                if (playable[id] === 1) {
-                    cases[i].classList.add('playable');
-                    cases[i].classList.remove('not_playable');
-                } else {
-                    cases[i].classList.add('not_playable');
-                    cases[i].classList.remove('playable');
-                }
-            }
+        .middle {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            height: 30%;
+            width: 90%;
+            box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px, rgba(0, 0, 0, 0.3) 0px 7px 13px -3px, rgba(0, 0, 0, 0.2) 0px -3px 0px inset;
+            padding: 2vw;
+            background: #703e00 url("https://www.transparenttextures.com/patterns/wood-pattern.png");
+            /* This is mostly intended for prototyping; please download the pattern and re-host for production environments. Thank you! */
+            border-radius: 10vh;
         }
 
-        function play_case(id) {
-            console.log('play case ' + id);
-            fetch('http://127.0.0.1:5000/play/' + id)
-                .then(response => response.json())
-                .then(data => {
-                    console.log(data);
-                    update_board(data);
-                })
-                .catch(error => console.error(error)
-                );
+        .board {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 70%;
+            height: 100%;
         }
 
-        document.addEventListener('DOMContentLoaded', function() {
-            let cases = document.querySelectorAll('.grid-item');
+        .first_line, .second_line {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 50%;
+        }
 
-            for (let i = 0; i < cases.length ; i++) {
-                cases[i].addEventListener('click', function () {
-                    let id = parseInt(cases[i].id);
-                    if (cases[i].classList.contains('playable'))
-                        play_case(id);
-                })
-            }
+        .grid-item {
+            margin-left: 2%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 50%;
+            height: 90%;
+            border: 3px solid black;
+            border-radius: 5vh;
+            box-shadow: inset 0px -64px 100px 0px rgba(0, 0, 0, 0.65);
+            color: white;
+            font-size: 2em;
+        }
 
-            fetch('http://127.0.0.1:5000/current_board')
-                .then(response => response.json())
-                .then(data => {
-                    console.log(data);
-                    update_board(data);
-                })
-                .catch(error => console.error(error)
-                );
-        });
+        .control_panel {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-evenly;
+            height: 100%;
+            width: 20%;
+            border-right: 10px double black;
+        }
 
+        /* CSS */
+        .button-4 {
+            appearance: none;
+            background-color: #FAFBFC;
+            border: 1px solid rgba(27, 31, 35, 0.15);
+            border-radius: 6px;
+            box-shadow: rgba(27, 31, 35, 0.04) 0 1px 0, rgba(255, 255, 255, 0.25) 0 1px 0 inset;
+            box-sizing: border-box;
+            color: #24292E;
+            cursor: pointer;
+            display: inline-block;
+            font-family: -apple-system, system-ui, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            font-size: 14px;
+            font-weight: 500;
+            line-height: 20px;
+            list-style: none;
+            padding: 6px 16px;
+            position: relative;
+            transition: background-color 0.2s cubic-bezier(0.3, 0, 0.5, 1);
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+            vertical-align: middle;
+            white-space: nowrap;
+            word-wrap: break-word;
+        }
 
+        .button-4:hover {
+            background-color: #F3F4F6;
+            text-decoration: none;
+            transition-duration: 0.1s;
+        }
 
-    </script>
+        .button-4:disabled {
+            background-color: #FAFBFC;
+            border-color: rgba(27, 31, 35, 0.15);
+            color: #959DA5;
+            cursor: default;
+        }
+
+        .button-4:active {
+            background-color: #EDEFF2;
+            box-shadow: rgba(225, 228, 232, 0.2) 0 1px 0 inset;
+            transition: none 0s;
+        }
+
+        .button-4:focus {
+            outline: 1px transparent;
+        }
+
+        .button-4:before {
+            display: none;
+        }
+
+        .button-4::-webkit-details-marker {
+            display: none;
+        }
+
+        .top, .bottom {
+            display: flex;
+            flex-direction: row;
+            font-size: 10vh;
+        }
+
+        .playable {
+            border-color: #32a852;
+        }
+
+        .not_playable {
+            border-color: #a83232;
+        }
+
+        .showProba {
+            color: white;
+            font-size: 24px;
+        }
+
+        .showProba input {
+            width: 20px;
+            height: 20px;
+        }
+
+    </style>
+
 
 </head>
 <body>
 <div class="main">
+    <div class="parameters">
+        <label for="batches">Number of batches:</label>
+        <input type="number" id="batches" name="batches" min="10" max="500000" value="10000"/>
+    </div>
+
     <div class="top">
-    <p>Player 1 score : </p> <p id="score1">0</p>
+        <p>Player 2 score : </p>
+        <p id="score1">0</p>
     </div>
     <div class="middle">
         <div class="control_panel">
-            <button class="button-4" id="reset">New Game PvP</button>
-            <button class="button-4" id="reset">New Game PvE</button>
+            <div class="showProba">
+
+                <label for="showProba1Box"> Show probabilities ? </label>
+                <input type="checkbox" id="showProba1Box" name="showProba1Box" value="2">
+
+            </div>
+
         </div>
         <div class="board">
 
@@ -253,10 +207,93 @@ body {
         </div>
     </div>
     <div class="bottom">
-            <p>Player 2 score : </p> <p id="score2">0</p>
+        <p>Player 1 score : </p>
+        <p id="score2">0</p>
     </div>
 
 </div>
 
 </body>
 </html>
+
+<script>
+
+    let urlUpdate = 'http://127.0.0.1:5000/current_board'
+    const showProba1Box = document.getElementById('showProba1Box');
+
+    function change_score_player_1(score) {
+        let score_player_1 = document.getElementById('score1');
+        score_player_1.innerHTML = score;
+    }
+
+    function change_score_player_2(score) {
+        let score_player_2 = document.getElementById('score2');
+        score_player_2.innerHTML = score;
+    }
+
+    async function get_data_and_update() {
+        await fetch(urlUpdate)
+            .then(response => response.json())
+            .then(data => {
+                update_board(data);
+            })
+            .catch(error => console.error(error)
+            );
+    }
+
+    function update_board(json) {
+
+        let cases = document.querySelectorAll('.grid-item');
+        let board = json.board;
+        let playable = json.playable;
+        change_score_player_1(json.score1);
+        change_score_player_2(json.score2);
+        for (let i = 0; i < board.length; i++) {
+            let id = parseInt(cases[i].id);
+            cases[i].innerHTML = board[id];
+            if (playable[id] === 1) {
+                cases[i].classList.add('playable');
+                cases[i].classList.remove('not_playable');
+            } else {
+                cases[i].classList.add('not_playable');
+                cases[i].classList.remove('playable');
+            }
+        }
+    }
+
+    function play_case(id) {
+        console.log('play case ' + id);
+        fetch('http://127.0.0.1:5000/play/' + id)
+            .then(response => response.json())
+            .then(data => {
+                get_data_and_update();
+            })
+            .catch(error => console.error(error)
+            );
+    }
+
+    showProba1Box.addEventListener('change', function () {
+        if (showProba1Box.checked) {
+            urlUpdate = 'http://127.0.0.1:5000/current_board_proba'
+        } else {
+            urlUpdate = 'http://127.0.0.1:5000/current_board'
+        }
+        get_data_and_update();
+    });
+
+    document.addEventListener('DOMContentLoaded', function () {
+        let cases = document.querySelectorAll('.grid-item');
+
+        for (let i = 0; i < cases.length; i++) {
+            cases[i].addEventListener('click', function () {
+                let id = parseInt(cases[i].id);
+                if (cases[i].classList.contains('playable'))
+                    play_case(id);
+            })
+        }
+
+        get_data_and_update();
+    });
+
+
+</script>

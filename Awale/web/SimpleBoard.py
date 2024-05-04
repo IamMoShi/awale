@@ -1,5 +1,7 @@
 import numpy as np
 import copy
+import subprocess
+import json
 
 LEN = 6
 
@@ -15,6 +17,8 @@ class SimpleBoard:
         self.playersNames: [str, str] = ["Player 1", "Player 2"]
         # Players scores
         self.playersScores: np.ndarray = np.array([0, 0])
+        # Number of batches
+        self.batches = 10000
 
     def __str__(self):
         line: str = ('─' * 18 + '\n' + '-' * 7 + str(" %02d " % (self.playersScores[1],)) + '-' * 7 + '\n')
@@ -97,8 +101,29 @@ class SimpleBoard:
         self.turn = not self.turn
 
     def evaluate(self):
-        # TODO
-        pass
+        p1 = subprocess.run(
+            ["./CAwale.exe",
+             str(self.firstSecond[int(self.turn)][0]),
+             str(self.firstSecond[int(self.turn)][1]),
+             str(self.firstSecond[int(self.turn)][2]),
+             str(self.firstSecond[int(self.turn)][3]),
+             str(self.firstSecond[int(self.turn)][4]),
+             str(self.firstSecond[int(self.turn)][5]),
+             str(self.firstSecond[int(not self.turn)][0]),
+             str(self.firstSecond[int(not self.turn)][1]),
+             str(self.firstSecond[int(not self.turn)][2]),
+             str(self.firstSecond[int(not self.turn)][3]),
+             str(self.firstSecond[int(not self.turn)][4]),
+             str(self.firstSecond[int(not self.turn)][5]),
+             str(self.playersScores[0]),
+             str(self.playersScores[1]),
+             str(self.batches)],
+            capture_output=True)
+        # p1 = subprocess.run(
+        #     ["./CAwale.exe", "4", "0", "4", "4", "4", "4", "4", "4", "4", "4", "4", "4", "0", "0", "100000"],
+        #     capture_output=True)
+        data = json.loads(p1.stdout.decode())
+        return data
 
     def currentPlayer(self) -> str:
         return self.playersNames[self.turn]
@@ -116,6 +141,3 @@ class SimpleBoard:
         self.firstSecond = np.array([4 * np.ones(LEN, dtype=int), 4 * np.ones(LEN, dtype=int)])
         self.turn = 0
         self.playersScores = np.array([0, 0])
-
-
-
