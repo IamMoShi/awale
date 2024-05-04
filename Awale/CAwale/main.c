@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <time.h>
+#include <assert.h>
 
 /* ================================================================================================================= */
 /* ===================================================== BOARD ===================================================== */
@@ -60,18 +61,20 @@ uint8_t count_playable(const uint8_t tab_playable[6]) {
 }
 
 /* ================================================================================================================= */
+void printb(Board_p board);
 
 void play(Board_p board, uint8_t index) {
     uint8_t seeds;
 
     if (board->turn) {
-        index += 6;
-        seeds = board->first[index];
-        board->first[index] = 0;
-    } else {
         seeds = board->second[index];
         board->second[index] = 0;
+        index += 6;
+    } else {
+        seeds = board->first[index];
+        board->first[index] = 0;
     }
+
 
     uint8_t played = index;
 
@@ -155,10 +158,10 @@ void printb(Board_p board) {
 typedef struct {
     long int depth;
     int8_t result; // -1 : loss, 0 : draw, 1 : win
-    uint8_t moves[1000];
-} story;
+    uint8_t first_move;
+} Story;
 
-story solve_recursive(Board_t *board, story result) {
+Story solve_recursive(Board_t *board, Story result) {
     Board_t *last_board; // The board before the move played this turn
     uint8_t index; // The index (between the possible moves) played this turn
     uint8_t last_played; // The real index played this turn (between 0 and 5)
@@ -211,7 +214,6 @@ story solve_recursive(Board_t *board, story result) {
         if (count_playable(last_board->playable) ==
             0) { // The opponent already had no seeds to play before our move
             result.depth++;
-            result.moves[result.depth] = last_played;
             return solve_recursive(last_board, result); // This is not a starvation, the player can't play anymore
         }
         last_board->turn = !last_board->turn;
@@ -222,8 +224,251 @@ story solve_recursive(Board_t *board, story result) {
     }
 
     result.depth++;
-    result.moves[result.depth] = last_played;
+    if (result.depth == 1) {
+        result.first_move = last_played;
+    }
     return solve_recursive(board, result);
+}
+
+
+void evaluate(Board_t *board, int number_of_batches) {
+    double probability_table[6] = {0, 0, 0, 0, 0, 0};
+    int victories[6] = {0, 0, 0, 0, 0, 0};
+    int loses[6] = {0, 0, 0, 0, 0, 0};
+    int null[6] = {0, 0, 0, 0, 0, 0};
+    double depth[6] = {0, 0, 0, 0, 0, 0};
+    int MinMax[6][2] = {{0, 0},
+                        {0, 0},
+                        {0, 0},
+                        {0, 0},
+                        {0, 0},
+                        {0, 0}};
+    for (int i = 0; i < number_of_batches; i++) {
+        Story current_story = {0, 0, 0};
+        Board_t board_loop = *board;
+        current_story = solve_recursive(&board_loop, current_story);
+
+        if (current_story.result == 1) {
+            victories[current_story.first_move]++;
+        } else if (current_story.result == -1) {
+            loses[current_story.first_move]++;
+        } else {
+            null[current_story.first_move]++;
+        }
+
+        depth[current_story.first_move] += current_story.depth;
+
+        if (current_story.depth > MinMax[current_story.first_move][1]) {
+            MinMax[current_story.first_move][1] = current_story.depth;
+        }
+
+        if (current_story.depth < MinMax[current_story.first_move][0] || MinMax[current_story.first_move][0] == 0) {
+            MinMax[current_story.first_move][0] = current_story.depth;
+        }
+    }
+
+
+    for (int i = 0; i < 6; ++i) {
+        depth[i] = depth[i] / (double) (victories[i] + null[i] + loses[i]);
+        probability_table[i] = (double) victories[i] / (double) (victories[i] + null[i] + loses[i]);
+        printf("%d -- v: %d ; n: %d ; d: %d ; txV : %.10lf ; depthMoy : %.10lf ; depthMin : %d ; depthMax %d\n", i, victories[i], null[i], loses[i], probability_table[i], depth[i] , MinMax[i][0], MinMax[i][1]);
+    }
+
+    // Choose the best move
+
+
+}
+
+
+
+/* ================================================================================================================= */
+/* ===================================================== TEST ====================================================== */
+/* ================================================================================================================= */
+
+
+void test_load_board() {
+    uint8_t test_table[14] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14};
+    Board_t test_board = load_board(test_table);
+
+    assert(test_board.first[0] == 1);
+    assert(test_board.first[1] == 2);
+    assert(test_board.first[2] == 3);
+    assert(test_board.first[3] == 4);
+    assert(test_board.first[4] == 5);
+    assert(test_board.first[5] == 6);
+    assert(test_board.second[0] == 7);
+    assert(test_board.second[1] == 8);
+    assert(test_board.second[2] == 9);
+    assert(test_board.second[3] == 10);
+    assert(test_board.second[4] == 11);
+    assert(test_board.second[5] == 12);
+    assert(test_board.turn == 0);
+    assert(test_board.score[0] == 13);
+    assert(test_board.score[1] == 14);
+    printf("Test load Board passed\n");
+}
+
+void test_playable() {
+
+    //Everything is possible
+    uint8_t test_table_1[14] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14};
+    Board_t test_board = load_board(test_table_1);
+
+
+    assert(test_board.playable[0] == 1);
+    assert(test_board.playable[1] == 1);
+    assert(test_board.playable[2] == 1);
+    assert(test_board.playable[3] == 1);
+    assert(test_board.playable[4] == 1);
+    assert(test_board.playable[5] == 1);
+
+    //Everything is possible
+    uint8_t test_table_2[14] = {0, 1, 0, 0, 0, 0, 7, 8, 9, 10, 11, 12, 13, 14};
+    Board_t test_board_2 = load_board(test_table_2);
+
+    assert(test_board_2.playable[0] == 0);
+    assert(test_board_2.playable[1] == 1);
+    assert(test_board_2.playable[2] == 0);
+    assert(test_board_2.playable[3] == 0);
+    assert(test_board_2.playable[4] == 0);
+    assert(test_board_2.playable[5] == 0);
+
+    //Everything is possible
+    uint8_t test_table_3[14] = {0, 1, 0, 0, 0, 0, 1, 0, 1, 12, 0, 0, 13, 14};
+    Board_t test_board_3 = load_board(test_table_3);
+    test_board_3.turn = 1;
+    playable(&test_board_3);
+
+
+    assert(test_board_3.playable[0] == 1);
+    assert(test_board_3.playable[1] == 0);
+    assert(test_board_3.playable[2] == 1);
+    assert(test_board_3.playable[3] == 1);
+    assert(test_board_3.playable[4] == 0);
+    assert(test_board_3.playable[5] == 0);
+
+    printf("Test playable passed\n");
+
+
+}
+
+void test_count() {
+
+    uint8_t test_table_1[14] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14};
+    Board_t test_board_1 = load_board(test_table_1);
+
+    uint8_t test_count_1 = count_playable(test_board_1.playable);
+    assert(test_count_1 == 6);
+
+
+    uint8_t test_table_2[14] = {0, 1, 0, 0, 0, 0, 7, 8, 9, 10, 11, 12, 13, 14};
+    Board_t test_board_2 = load_board(test_table_2);
+
+    uint8_t test_count_2 = count_playable(test_board_2.playable);
+    assert(test_count_2 == 1);
+
+    uint8_t test_table_3[14] = {0, 1, 0, 0, 0, 0, 1, 0, 1, 12, 0, 0, 13, 14};
+    Board_t test_board_3 = load_board(test_table_3);
+    test_board_3.turn = 1;
+    playable(&test_board_3);
+
+    uint8_t test_count_3 = count_playable(test_board_3.playable);
+    assert(test_count_3 == 3);
+}
+
+void test_is_finished() {
+
+    uint8_t test_table_1[14] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14};
+    Board_t test_board_1 = load_board(test_table_1);
+
+    assert(!is_finished(&test_board_1));
+
+
+    uint8_t test_table_2[14] = {0, 1, 0, 0, 0, 0, 7, 8, 9, 10, 11, 12, 20, 25};
+    Board_t test_board_2 = load_board(test_table_2);
+
+
+    assert(is_finished(&test_board_2));
+}
+
+void test_play() {
+    uint8_t test_table_1[14] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14};
+    Board_t test_board_1 = load_board(test_table_1);
+
+    play(&test_board_1, 0);
+
+    assert(test_board_1.first[0] == 0);
+    assert(test_board_1.first[1] == 3);
+    assert(test_board_1.first[2] == 3);
+    assert(test_board_1.first[3] == 4);
+    assert(test_board_1.first[4] == 5);
+    assert(test_board_1.first[5] == 6);
+    assert(test_board_1.second[0] == 7);
+    assert(test_board_1.second[1] == 8);
+    assert(test_board_1.second[2] == 9);
+    assert(test_board_1.second[3] == 10);
+    assert(test_board_1.second[4] == 11);
+    assert(test_board_1.second[5] == 12);
+
+
+    uint8_t test_table_2[14] = {1, 2, 3, 4, 5, 4, 7, 8, 9, 10, 11, 12, 13, 14};
+    Board_t test_board_2 = load_board(test_table_2);
+
+    play(&test_board_2, 5);
+
+
+    assert(test_board_2.first[0] == 1);
+    assert(test_board_2.first[1] == 2);
+    assert(test_board_2.first[2] == 3);
+    assert(test_board_2.first[3] == 4);
+    assert(test_board_2.first[4] == 5);
+    assert(test_board_2.first[5] == 0);
+    assert(test_board_2.second[0] == 8);
+    assert(test_board_2.second[1] == 9);
+    assert(test_board_2.second[2] == 10);
+    assert(test_board_2.second[3] == 11);
+    assert(test_board_2.second[4] == 11);
+    assert(test_board_2.second[5] == 12);
+
+    uint8_t test_table_3[14] = {0, 1, 0, 0, 0, 0, 1, 0, 1, 12, 0, 0, 13, 14};
+    Board_t test_board_3 = load_board(test_table_3);
+
+    play(&test_board_3, 0);
+
+    assert(test_board_3.first[0] == 0);
+    assert(test_board_3.first[1] == 1);
+    assert(test_board_3.first[2] == 0);
+    assert(test_board_3.first[3] == 0);
+    assert(test_board_3.first[4] == 0);
+    assert(test_board_3.first[5] == 0);
+    assert(test_board_3.second[0] == 1);
+    assert(test_board_3.second[1] == 0);
+    assert(test_board_3.second[2] == 1);
+    assert(test_board_3.second[3] == 12);
+    assert(test_board_3.second[4] == 0);
+    assert(test_board_3.second[5] == 0);
+
+
+    uint8_t test_table_4[14] = {0, 1, 0, 0, 0, 0, 1, 0, 1, 12, 0, 0, 13, 14};
+    Board_t test_board_4 = load_board(test_table_4);
+    test_board_4.turn = 1;
+
+    play(&test_board_4, 0);
+
+
+    assert(test_board_4.first[0] == 0);
+    assert(test_board_4.first[2] == 0);
+    assert(test_board_4.first[3] == 0);
+    assert(test_board_4.first[4] == 0);
+    assert(test_board_4.first[5] == 0);
+    assert(test_board_4.second[0] == 0);
+    assert(test_board_4.second[1] == 1);
+    assert(test_board_4.second[2] == 1);
+    assert(test_board_4.second[3] == 12);
+    assert(test_board_4.second[4] == 0);
+    assert(test_board_4.second[5] == 0);
+
+    printf("Test passed\n");
 }
 
 
@@ -263,16 +508,25 @@ unsigned long mix(unsigned long a, unsigned long b, unsigned long c) {
 }
 
 int main(int argc, char *argv[]) {
+    test_load_board();
+    test_playable();
+    test_count();
+    test_is_finished();
+    test_play();
+
     if (argc != 15) {
         return -1;
     }
     // Build the board
+    srand(time(NULL));
+
     uint8_t board_table[14];
     for (int i = 0; i < 12; i++) {
         board_table[i] = atoi(argv[i + 1]);
     }
     Board_t board1 = load_board(board_table);
 
+    evaluate(&board1, 100000);
 
     return 0;
 }
