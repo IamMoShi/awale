@@ -10,8 +10,8 @@ class SimpleBoard:
 
     def __init__(self):
         # firstSecond, a array 2x6 that contains first and second
-        #self.firstSecond: np.ndarray = np.array([4 * np.ones(LEN, dtype=int), 4 * np.ones(LEN, dtype=int)])
-        self.firstSecond: np.ndarray = np.array([4 * np.ones(LEN, dtype=int), np.array([0, 0, 0, 0, 0, 0])])
+        self.firstSecond: np.ndarray = np.array([4 * np.ones(LEN, dtype=int), 4 * np.ones(LEN, dtype=int)])
+        #self.firstSecond: np.ndarray = np.array([4 * np.ones(LEN, dtype=int), np.array([0, 0, 0, 0, 0, 0])])
         #self.firstSecond: np.ndarray = np.array([np.array([1, 0, 0, 0, 0, 0]), np.array([1, 0, 0, 0, 0, 0])])
         # 0 : player 1 is playing ? 1 : player 2 is playing
         self.turn: bool = 0
@@ -19,7 +19,7 @@ class SimpleBoard:
         self.playersNames: [str, str] = ["Player 1", "Player 2"]
         # Players scores
         #self.playersScores: np.ndarray = np.array([0, 0])
-        self.playersScores: np.ndarray = np.array([25, 0])
+        self.playersScores: np.ndarray = np.array([0, 0])
         # Number of batches
         self.batches = 10000
 
