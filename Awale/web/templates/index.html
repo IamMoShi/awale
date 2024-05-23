@@ -26,7 +26,7 @@
             flex-direction: row;
             align-items: center;
             justify-content: center;
-            height: 30%;
+            height: 50%;
             width: 90%;
             box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px, rgba(0, 0, 0, 0.3) 0px 7px 13px -3px, rgba(0, 0, 0, 0.2) 0px -3px 0px inset;
             padding: 2vw;
@@ -50,7 +50,16 @@
             align-items: center;
             justify-content: center;
             width: 100%;
-            height: 50%;
+            height: 40%;
+        }
+
+        .first_first_line, .second_second_line {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 10%;
         }
 
         .grid-item {
@@ -63,6 +72,17 @@
             border: 3px solid black;
             border-radius: 5vh;
             box-shadow: inset 0px -64px 100px 0px rgba(0, 0, 0, 0.65);
+            color: white;
+            font-size: 2em;
+        }
+
+        .proba-item {
+            margin-left: 2%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 50%;
+            border-radius: 5vh;
             color: white;
             font-size: 2em;
         }
@@ -138,7 +158,7 @@
         .top, .bottom {
             display: flex;
             flex-direction: row;
-            font-size: 10vh;
+            font-size: 6vh;
         }
 
         .playable {
@@ -186,6 +206,15 @@
         </div>
         <div class="board">
 
+            <div class="first_first_line">
+                <div class="proba-item" id="111"></div>
+                <div class="proba-item" id="110"></div>
+                <div class="proba-item" id="109"></div>
+                <div class="proba-item" id="108"></div>
+                <div class="proba-item" id="107"></div>
+                <div class="proba-item" id="106"></div>
+            </div>
+
             <div class="first_line">
                 <div class="grid-item" id="11">4</div>
                 <div class="grid-item" id="10">4</div>
@@ -202,6 +231,15 @@
                 <div class="grid-item" id="3">4</div>
                 <div class="grid-item" id="4">4</div>
                 <div class="grid-item" id="5">4</div>
+            </div>
+
+            <div class="second_second_line">
+                <div class="proba-item" id="100"></div>
+                <div class="proba-item" id="101"></div>
+                <div class="proba-item" id="102"></div>
+                <div class="proba-item" id="103"></div>
+                <div class="proba-item" id="104"></div>
+                <div class="proba-item" id="105"></div>
             </div>
 
         </div>
@@ -222,17 +260,17 @@
     const showProba1Box = document.getElementById('showProba1Box');
 
     function change_score_player_1(score) {
-        let score_player_1 = document.getElementById('score1');
+        let score_player_1 = document.getElementById('score2');
         score_player_1.innerHTML = score;
     }
 
     function change_score_player_2(score) {
-        let score_player_2 = document.getElementById('score2');
+        let score_player_2 = document.getElementById('score1');
         score_player_2.innerHTML = score;
     }
 
     async function get_data_and_update() {
-        await fetch(urlUpdate)
+        await fetch(urlUpdate + '?batches=' + document.getElementById('batches').value)
             .then(response => response.json())
             .then(data => {
                 update_board(data);
@@ -259,6 +297,35 @@
                 cases[i].classList.remove('playable');
             }
         }
+
+        if (showProba1Box.checked) {
+            let probas = document.querySelectorAll('.proba-item');
+            for (let i = 0; i < probas.length; i++) {
+                let id = parseInt(probas[i].id);
+                if (!json.turn) {
+                    if (i < 6) {
+                        probas[i + 6].innerHTML = (100*json.proba[i].v_rate).toFixed(1) + '/' + json.proba[i].avg_depth.toFixed(1).toString();
+                    } else {
+                        probas[11 - i].innerHTML = 0;
+                    }
+                } else {
+                    if (i < 6) {
+                        probas[i + 6].innerHTML = 0;
+                    } else {
+                        probas[11 - i].innerHTML = (100*json.proba[i - 6].v_rate).toFixed(1) + '/' + json.proba[i - 6].avg_depth.toFixed(1).toString();
+                    }
+                }
+            }
+
+        } else {
+            let probas = document.querySelectorAll('.proba-item');
+
+
+            for (let i = 0; i < probas.length; i++) {
+                probas[i].innerHTML = '';
+            }
+
+        }
     }
 
     function play_case(id) {
@@ -272,13 +339,18 @@
             );
     }
 
-    showProba1Box.addEventListener('change', function () {
+    function display_proba() {
         if (showProba1Box.checked) {
             urlUpdate = 'http://127.0.0.1:5000/current_board_proba'
         } else {
             urlUpdate = 'http://127.0.0.1:5000/current_board'
         }
+        console.log("urlUpdate : " + urlUpdate);
         get_data_and_update();
+    }
+
+    showProba1Box.addEventListener('change', function () {
+        display_proba();
     });
 
     document.addEventListener('DOMContentLoaded', function () {
@@ -292,7 +364,7 @@
             })
         }
 
-        get_data_and_update();
+        display_proba();
     });
 
 

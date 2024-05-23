@@ -11,6 +11,7 @@ class SimpleBoard:
     def __init__(self):
         # firstSecond, a array 2x6 that contains first and second
         self.firstSecond: np.ndarray = np.array([4 * np.ones(LEN, dtype=int), 4 * np.ones(LEN, dtype=int)])
+        # self.firstSecond: np.ndarray = np.array([4 * np.ones(LEN, dtype=int), np.array([1, 0, 0, 0, 0, 0])])
         # 0 : player 1 is playing ? 1 : player 2 is playing
         self.turn: bool = 0
         # The names of the 2 players
@@ -101,23 +102,39 @@ class SimpleBoard:
         self.turn = not self.turn
 
     def evaluate(self):
+        print(["./CAwale.exe",
+               str(self.firstSecond[int(self.turn)][0]),  # 1
+               str(self.firstSecond[int(self.turn)][1]),  # 2
+               str(self.firstSecond[int(self.turn)][2]),  # 3
+               str(self.firstSecond[int(self.turn)][3]),  # 4
+               str(self.firstSecond[int(self.turn)][4]),  # 5
+               str(self.firstSecond[int(self.turn)][5]),  # 6
+               str(self.firstSecond[int(not self.turn)][0]),  # 7
+               str(self.firstSecond[int(not self.turn)][1]),  # 8
+               str(self.firstSecond[int(not self.turn)][2]),  # 9
+               str(self.firstSecond[int(not self.turn)][3]),  # 10
+               str(self.firstSecond[int(not self.turn)][4]),  # 11
+               str(self.firstSecond[int(not self.turn)][5]),  # 12
+               str(self.playersScores[int(self.turn)]),  # 13
+               str(self.playersScores[int(not self.turn)]),  # 14
+               str(self.batches)])
         p1 = subprocess.run(
             ["./CAwale.exe",
-             str(self.firstSecond[int(self.turn)][0]),
-             str(self.firstSecond[int(self.turn)][1]),
-             str(self.firstSecond[int(self.turn)][2]),
-             str(self.firstSecond[int(self.turn)][3]),
-             str(self.firstSecond[int(self.turn)][4]),
-             str(self.firstSecond[int(self.turn)][5]),
-             str(self.firstSecond[int(not self.turn)][0]),
-             str(self.firstSecond[int(not self.turn)][1]),
-             str(self.firstSecond[int(not self.turn)][2]),
-             str(self.firstSecond[int(not self.turn)][3]),
-             str(self.firstSecond[int(not self.turn)][4]),
-             str(self.firstSecond[int(not self.turn)][5]),
-             str(self.playersScores[0]),
-             str(self.playersScores[1]),
-             str(self.batches)],
+             str(self.firstSecond[int(self.turn)][0]),  # 1
+             str(self.firstSecond[int(self.turn)][1]),  # 2
+             str(self.firstSecond[int(self.turn)][2]),  # 3
+             str(self.firstSecond[int(self.turn)][3]),  # 4
+             str(self.firstSecond[int(self.turn)][4]),  # 5
+             str(self.firstSecond[int(self.turn)][5]),  # 6
+             str(self.firstSecond[int(not self.turn)][0]),  # 7
+             str(self.firstSecond[int(not self.turn)][1]),  # 8
+             str(self.firstSecond[int(not self.turn)][2]),  # 9
+             str(self.firstSecond[int(not self.turn)][3]),  # 10
+             str(self.firstSecond[int(not self.turn)][4]),  # 11
+             str(self.firstSecond[int(not self.turn)][5]),  # 12
+             str(self.playersScores[int(self.turn)]),  # 13
+             str(self.playersScores[int(not self.turn)]),  # 14
+             str(self.batches)],  # 15
             capture_output=True)
         # p1 = subprocess.run(
         #     ["./CAwale.exe", "4", "0", "4", "4", "4", "4", "4", "4", "4", "4", "4", "4", "0", "0", "100000"],

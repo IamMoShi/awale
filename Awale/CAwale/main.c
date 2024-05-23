@@ -96,7 +96,7 @@ void play(Board_p board, uint8_t index) {
 
     if (board->turn && index < 6) {
         while (board->first[index] == 2 || board->first[index] == 3) {
-            board->score[0] += board->first[index];
+            board->score[1] += board->first[index];
             board->first[index] = 0;
 
             if (index == 0) break;
@@ -104,7 +104,7 @@ void play(Board_p board, uint8_t index) {
         }
     } else if (!board->turn && index >= 6) {
         while (board->second[index - 6] == 2 || board->second[index - 6] == 3) {
-            board->score[1] += board->second[index - 6];
+            board->score[0] += board->second[index - 6];
             board->second[index - 6] = 0;
 
             if (index == 6) break;
@@ -159,75 +159,75 @@ typedef struct {
     long int depth;
     int8_t result; // -1 : loss, 0 : draw, 1 : win
     uint8_t first_move;
+    long int absolute_depth;
 } Story;
 
-Story solve_recursive(Board_t *board, Story result) {
-    Board_t *last_board; // The board before the move played this turn
+Story solve(Board_t *board, Story result) {
+    Board_t last_board; // The board before the move played this turn
     uint8_t index; // The index (between the possible moves) played this turn
     uint8_t last_played; // The real index played this turn (between 0 and 5)
     uint8_t count; // The number of possible moves this turn
 
+    while (true) {
 
-    if (result.depth >= 2000) {
-        exit(10);
-    }
-
-    if (is_finished(board)) {
-        // If the game is finished, return the result
-        if (board->score[0] > board->score[1]) {
-            result.result = 1;
-        } else if (board->score[0] < board->score[1]) {
-            result.result = -1;
-        } else {
-            result.result = 0;
-        }
-        return result;
-    }
-
-    count = count_playable(board->playable); // Set the number of possible moves this turn
-    if (count == 0) {
-        // If there is no possible moves, the game is finished
-        if (board->turn == 0) board->score[1] = 48 - board->score[0];
-        else board->score[0] = 48 - board->score[1];
-        result.result = board->score[0] > board->score[1] ? 1 : board->score[0] < board->score[1] ? -1 : 0;
-        return result;
-    }
-
-    index = rand() % count; // Choose a random move between the possible ones
-    for (int i = 0; i < 6; i++) {
-        if (board->playable[i]) {
-            if (index == 0) {
-                last_board = board; // Save the board before the move played this turn
-                last_played = i; // Save the real index played this turn
-                play(board, i); // Play the move
-                break;
+        // The game is over
+        if (is_finished(board)) {
+            // If the game is finished, return the result
+            if (board->score[0] > board->score[1]) {
+                result.result = 1;
+            } else if (board->score[0] < board->score[1]) {
+                result.result = -1;
+            } else {
+                result.result = 0;
             }
-            index--;
+            return result;
         }
-    }
 
-    if (count_playable(board->playable) == 0) {
-        // Our move may have caused a starvation
+        count = count_playable(board->playable); // Set the number of possible moves this turn
 
-        last_board->turn = !last_board->turn;
-        playable(last_board);
-        if (count_playable(last_board->playable) ==
-            0) { // The opponent already had no seeds to play before our move
+        if (count == 0) {
+            // If there is no possible moves, the game is finished
+            if (board->turn == 0) board->score[1] = 48 - board->score[0];
+            else board->score[0] = 48 - board->score[1];
+            result.result = board->score[0] > board->score[1] ? 1 : board->score[0] < board->score[1] ? -1 : 0;
+            return result;
+        }
+
+        index = rand() % count; // Choose a random move between the possible ones
+        for (int i = 0; i < 6; i++) {
+            if (board->playable[i]) {
+                if (index == 0) {
+                    last_board = *board; // Save the board before the move played this turn
+                    last_played = i; // Save the real index played this turn
+                    play(board, i); // Play the move
+                    break;
+                }
+                index--;
+            }
+        }
+
+        if (count_playable(board->playable) == 0) {
+            // Our move may have caused a starvation
+
+            last_board.turn = !last_board.turn;
+            playable(&last_board);
+            if (count_playable(last_board.playable) == 0) {
+                // The opponent already had no seeds to play before our move
+                result.depth++;
+            } else {
+                last_board.turn = !last_board.turn;
+                playable(&last_board);
+                last_board.playable[last_played] = 0; // Starvation
+                board = &last_board;
+            }
+        } else {
             result.depth++;
-            return solve_recursive(last_board, result); // This is not a starvation, the player can't play anymore
         }
-        last_board->turn = !last_board->turn;
-        playable(last_board);
 
-        last_board->playable[last_played] = 0; // Starvation
-        return solve_recursive(last_board, result);
+        if (result.depth == 1) {
+            result.first_move = last_played;
+        }
     }
-
-    result.depth++;
-    if (result.depth == 1) {
-        result.first_move = last_played;
-    }
-    return solve_recursive(board, result);
 }
 
 
@@ -243,10 +243,14 @@ void evaluate(Board_t *board, int number_of_batches) {
                         {0, 0},
                         {0, 0},
                         {0, 0}};
+
+    long int absolute_depth_max = 0;
+
+
     for (int i = 0; i < number_of_batches; i++) {
         Story current_story = {0, 0, 0};
         Board_t board_loop = *board;
-        current_story = solve_recursive(&board_loop, current_story);
+        current_story = solve(&board_loop, current_story);
 
         if (current_story.result == 1) {
             victories[current_story.first_move]++;
@@ -257,6 +261,9 @@ void evaluate(Board_t *board, int number_of_batches) {
         }
 
         depth[current_story.first_move] += current_story.depth;
+        if (current_story.depth > absolute_depth_max) {
+            absolute_depth_max = current_story.depth;
+        }
 
         if (current_story.depth > MinMax[current_story.first_move][1]) {
             MinMax[current_story.first_move][1] = current_story.depth;
@@ -267,9 +274,10 @@ void evaluate(Board_t *board, int number_of_batches) {
         }
     }
 
+
     printf("{");
     for (int i = 0; i < 5; ++i) {
-        if  (((double) victories[i] + null[i] + loses[i]) == 0) {
+        if (((double) victories[i] + null[i] + loses[i]) == 0) {
             depth[i] = 0;
             probability_table[i] = 0;
         } else {
@@ -280,8 +288,13 @@ void evaluate(Board_t *board, int number_of_batches) {
                i, victories[i], null[i], loses[i], probability_table[i], depth[i], MinMax[i][0], MinMax[i][1]);
     }
     int i = 5;
-    depth[i] = depth[i] / (double) (victories[i] + null[i] + loses[i]);
-    probability_table[i] = (double) victories[i] / (double) (victories[i] + null[i] + loses[i]);
+    if (((double) victories[i] + null[i] + loses[i]) == 0) {
+        depth[i] = 0;
+        probability_table[i] = 0;
+    } else {
+        depth[i] = depth[i] / (double) (victories[i] + null[i] + loses[i]);
+        probability_table[i] = (double) victories[i] / (double) (victories[i] + null[i] + loses[i]);
+    }
     printf("\n\"%d\": {\n \"victories\": %d,\n \"draw\": %d,\n \"defeats\": %d,\n \"v_rate\": %.10lf,\n \"avg_depth\": %.10lf,\n \"min_depth\": %d,\n \"max_depth\": %d\n}\n",
            i, victories[i], null[i], loses[i], probability_table[i], depth[i], MinMax[i][0], MinMax[i][1]);
     printf("}\n");
@@ -492,7 +505,6 @@ int main(int argc, char *argv[]) {
 //    test_is_finished();
 //    test_play();
 
-    //printf("%d\n", argc);
     if (argc != 16) {
         return 1;
     }
@@ -500,11 +512,10 @@ int main(int argc, char *argv[]) {
     srand(time(NULL));
 
     uint8_t board_table[14];
-    for (int i = 0; i < 12; i++) {
+    for (int i = 0; i < 14; i++) {
         board_table[i] = atoi(argv[i + 1]);
     }
     Board_t board1 = load_board(board_table);
-
     evaluate(&board1, atoi(argv[15]));
 
     return 0;
