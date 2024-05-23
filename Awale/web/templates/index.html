@@ -273,6 +273,7 @@
         await fetch(urlUpdate + '?batches=' + document.getElementById('batches').value)
             .then(response => response.json())
             .then(data => {
+                console.log(data);
                 update_board(data);
             })
             .catch(error => console.error(error)
@@ -286,6 +287,14 @@
         let playable = json.playable;
         change_score_player_1(json.score1);
         change_score_player_2(json.score2);
+        if (json.score1 > 24 || json.score2 > 24) {
+            for (let i = 0; i < cases.length; i++) {
+                cases[i].classList.remove('playable');
+                cases[i].classList.remove('not_playable');
+            }
+            window.alert("Game is over ! Player 1 score : " + json.score1 + " Player 2 score : " + json.score2);
+            window.location.replace("http://127.0.0.1:5000/reset");
+        }
         for (let i = 0; i < board.length; i++) {
             let id = parseInt(cases[i].id);
             cases[i].innerHTML = board[id];
